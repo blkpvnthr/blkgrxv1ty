@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Job applications are private to their owner. Each doc carries a `uid`
+    // field equal to the creator's auth UID; only that user can read or write it.
+    match /applications/{appId} {
+      allow read: if request.auth != null
+                  && resource.data.uid == request.auth.uid;
+
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+
+      allow update, delete: if request.auth != null
+                            && resource.data.uid == request.auth.uid;
+    }
+
+    // Everything else is denied by default.
+  }
+}
